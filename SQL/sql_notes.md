@@ -14,6 +14,11 @@ For example, the age column, it is a number column, hence we can display more co
 Here we can see that we can do normal "age+10" or simple arithemetic to add this as a column and display it.
 
 
+this is a sample thing to check if it is working
+![[Pasted image 20250325115259.png]]
+
+
+
 
 
 
