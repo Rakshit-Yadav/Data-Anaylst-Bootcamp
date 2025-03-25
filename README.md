@@ -2,6 +2,8 @@
 
 ## Overview
 
+📌 The links given do not open in new tab due to limitations of making .md files work between Github and Obsidian and both of their syntax for my setup.
+
 This repository contains my notes, exercises, and resources as I progress through the **Data Analyst Bootcamp** by [Alex The Analyst](https://www.youtube.com/playlist?list=PLUaB-1hjhk8FE_XZ87vPPSfHqb6OcM0cF). I am using **Obsidian** for structured note-taking and **GitHub** for version control and tracking my learning journey.
 
 ## Structure
