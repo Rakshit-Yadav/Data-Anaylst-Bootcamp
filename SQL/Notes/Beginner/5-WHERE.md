@@ -73,15 +73,41 @@ WHERE birth_date > '1987-01-01'
 		- _ (underscore) → This means a specific value
 
 Use of **LIKE**, with the given operators:
-```sql
-SELECT *
+
+- %
+	```sql
+	SELECT *
+	FROM employee_demographics
+	WHERE first_name LIKE 'Jer%'
+	;
+	```
+	
+	The above query would mean look at ```first_name``` and it should start with 'Jer' but then it can be anything after that.
+	
+	![](attachments/Pasted%20image%2020250328171603.png)
+
+- _ (underscore)
+
+	This would be used to specify the exact match that we are looking at 
+	
+	```SQL
+	SELECT * 
+	FROM employee_demographics
+	WHERE first_name LIKE 'a__'
+	;
+	```
+	![](attachments/Pasted%20image%2020250401122533.png)
+	![](attachments/Pasted%20image%2020250401122634.png)
+
+We can also combine both of them: 
+```SQL
+SELECT * 
 FROM employee_demographics
-WHERE first_name LIKE 'Jer%'
+WHERE first_name LIKE 'a___%'
 ;
 ```
 
-The above query would mean look at ```first_name``` and it should start with 'Jer' but then it can be anything after that.
+This would give us Andy (because that has the exact match of underscores and % means anything or nothing can be after that) and April because she does have 3 characters after 'a' and after that anything can be there.
 
-![](attachments/Pasted%20image%2020250328171603.png)
-
+![](attachments/Pasted%20image%2020250401122832.png)
 
