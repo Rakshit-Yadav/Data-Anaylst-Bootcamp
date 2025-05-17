@@ -382,14 +382,313 @@ INNER JOIN parks_departments as PD
 
 SELECT first_name, last_name, 'Old Man' AS Label
 FROM employee_demographics
-WHERE age › 40 AND gender = 'Male'
+WHERE age > 40 AND gender = 'Male'
 UNION
 SELECT first_name, last_name, 'Old Lady' AS Label
 FROM employee_demographics
-WHERE age › 40 AND gender = 'Female'
+WHERE age > 40 AND gender = 'Female'
 UNION
 SELECT first_name, last_name, 'Highly Paid Employee' AS Label
 FROM employee_salary
-WHERE salary › 70000
+WHERE salary > 70000
 ORDER BY first_name, last_name
 ;
+
+
+-- _______________ STRINGS ________________
+
+-- this basically means working with strings and how can we manipulate them and what kind of functions we can use with them
+
+-- LENGTH
+SELECT first_name, LENGTH(first_name) AS 'Length of First Name'
+FROM employee_demographics
+;
+
+-- TRIM
+
+-- common basic example
+SELECT ('        hello          ');
+
+-- full TRIM
+SELECT TRIM('        hello          ');
+
+-- LEFT TRIM
+SELECT LTRIM('        hello          ');
+
+-- RIGHT TRIM
+SELECT RTRIM('        hello          ');
+
+-- comment about TRIM
+/* 
+it is a bit hard to see this example in these lines but it is remove white spaces from the designated positions and
+it should be quite handy when for example filling forms, a lot of people write the information and then sometimes add white spaces.
+This would be good to trim all of that from the leading and/or trailing parts to only get the information that is necessary
+*/
+
+-- SUBSTRINGS (seems very important this one)
+
+-- this could be better understood by first looking at LEFT and RIGHT
+
+-- LEFT
+SELECT first_name, LEFT(first_name, 4) AS 'first 4 charaacters'
+FROM employee_demographics;
+
+-- RIGHT
+SELECT first_name, 
+		LEFT(first_name, 4) AS 'first 4 charaacters',
+        last_name,
+        RIGHT(last_name, 3) AS 'last 4 characters'
+FROM employee_demographics;
+
+
+-- SUBSTRING
+SELECT first_name,
+		LEFT(first_name, 4),
+		RIGHT(first_name, 4),
+		SUBSTRING(first_name, 3,2)
+FROM employee_demographics;
+
+-- example to know what birth month everyone is born in using substring
+/*
+	if we see the date format in the data it is like this '1994-05-24', 
+    which means we should start at character 6, and extract 2 characters
+*/
+
+SELECT first_name, last_name,
+SUBSTRING(birth_date, 6,2) AS 'Birth Month'
+FROM employee_demographics;
+
+-- REPLACE
+
+SELECT first_name, REPLACE(first_name, 'a', 'z')
+FROM employee_demographics
+;
+
+-- LOCATE
+SELECT first_name, LOCATE('An', first_name)
+FROM employee_demographics
+;
+
+-- CONCAT
+
+SELECT first_name, 
+		last_name, 
+        CONCAT(first_name, ' ', last_name)
+FROM employee_demographics
+;
+
+
+-- ______________________ CASE STATEMENTS ______________________
+
+/*
+**Problem statement**: Council sent out a memo for pay increase, gotta follow it and determine people's new end of year salary and if they got a bonus, how much was it.
+Pay Increase and Bonus:
+- < 50000 = 5%
+- > 50000 = 7%
+- Finance department = 10% bonus
+*/
+
+SELECT first_name, last_name, salary,
+CASE
+	WHEN salary < 50000 THEN salary * 1.05
+    WHEN salary > 50000 THEN salary * 1.07
+END AS 'New_Raised_Salary',
+CASE
+	WHEN dept_id = 6 THEN salary * 0.10
+END AS 'Bonus'
+FROM employee_salary
+;
+
+
+-- if we want to label rather than calculate
+
+SELECT first_name,
+		last_name,
+		age,
+CASE
+	WHEN age <= 30 THEN 'Young'
+	WHEN age BETWEEN 31 and 50 THEN 'Old'
+	WHEN age >= 50 THEN "On Death's Door"
+END AS Age_Bracket
+FROM employee_demographics;
+
+-- ____________________ SUBQUERIES ___________________
+
+-- using subquery in WHERE clause
+SELECT * 
+FROM employee_demographics
+WHERE employee_id IN
+					(
+                    SELECT employee_id 
+                    FROM employee_salary
+                    WHERE dept_id IN
+									(
+                                    SELECT department_id 
+                                    FROM parks_departments
+                                    WHERE department_name = 'Parks and Recreation'
+                                    )
+					)
+;
+
+
+-- using subquery in SELECT clause
+
+SELECT first_name, 
+		salary,
+		(SELECT AVG(salary)
+			FROM employee_salary)
+FROM employee_salary
+;
+
+
+-- _____________________WINDOW FUNCTIONS__________________
+
+-- Problem Statement: We want to take gender column in our demographics table and compare it to salaries which is in salaries table.
+
+-- GROUP BY approach
+SELECT gender, AVG(salary) AS Average_Salary
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+	ON ED.employee_id = ES.employee_id
+GROUP BY gender
+;
+
+-- WINDOW Approacoh
+SELECT ED.first_name, ED.last_name, ED.gender, ES.salary, AVG(ES.salary) OVER(PARTITION BY gender) AS Average_Gender_Salary
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+	ON ED.employee_id = ES.employee_id
+;
+
+
+-- example of using OVER()
+SELECT ED.first_name, ED.last_name, ED.gender, ES.salary, AVG(ES.salary) OVER()
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+	ON ED.employee_id = ES.employee_id
+;
+
+-- example of using ROLLING TOTAL
+SELECT ED.first_name, ED.last_name, ED.gender, ES.salary, SUM(ES.salary) OVER(PARTITION BY gender ORDER BY ED.employee_id) AS Rolling_Gender_Sum_Salary
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+	ON ED.employee_id = ES.employee_id
+;
+
+-- ROW NUMBER
+SELECT ED.employee_id,ED.first_name, ED.last_name, gender, ES.salary,
+ROW_NUMBER() OVER()
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+ON ED.employee_id = ES.employee_id
+;
+
+-- ROW NUMBER BUT GIVING UNIQUE ROW NUMBER IN EACH GENDER
+SELECT ED.employee_id,ED.first_name, ED.last_name, gender, ES.salary,
+ROW_NUMBER() OVER(PARTITION BY gender) as row_num
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+ON ED.employee_id = ES.employee_id
+;
+
+-- same as above but ordering by salary within each partition
+SELECT ED.employee_id,ED.first_name, ED.last_name, gender, ES.salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as row_num
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+ON ED.employee_id = ES.employee_id
+;
+
+-- RANK Function
+SELECT ED.employee_id,ED.first_name, ED.last_name, gender, ES.salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as row_num,
+RANK() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as rank_num 
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+ON ED.employee_id = ES.employee_id
+;
+
+-- DENSE RANK FUNCTION
+SELECT ED.employee_id,ED.first_name, ED.last_name, gender, ES.salary,
+ROW_NUMBER() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as row_num,
+RANK() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as rank_num,
+DENSE_RANK() OVER(PARTITION BY gender ORDER BY ES.salary DESC) as dense_rank_num
+FROM employee_demographics AS ED
+JOIN employee_salary AS ES
+ON ED.employee_id = ES.employee_id
+;
+
+/* ------------------------- ADVANCED ------------------------- */
+
+
+-- _________________CTEs_____________________
+WITH CTE_Example AS
+(
+	SELECT gender, AVG(salary) AS avg_sal, MAX(salary) AS max_sal, MIN(salary) AS min_sal, COUNT(salary) AS count_sal
+	FROM employee_demographics AS ED
+	JOIN employee_salary AS ES
+	ON ED.employee_id = ES.employee_id
+	GROUP BY gender
+)
+SELECT AVG(avg_sal)
+FROM CTE_Example
+;
+
+-- Example to show we can have multiple CTEs and then use it, even for joining purposes and stuff
+
+WITH CTE_Example AS
+(
+	SELECT employee_id, gender, birth_date
+	FROM employee_demographics
+	WHERE birth_date > '1985-01-01'
+),
+CTE_Example2 AS
+(
+	SELECT employee_id, salary
+	FROM employee_salary
+	WHERE salary > 50000
+)
+SELECT *
+FROM CTE_Example
+JOIN CTE_Example2
+ON CTE_Example.employee_id = CTE_Example2.employee_id
+;
+
+
+-- _____________ TEMP TABLES _____________
+
+-- normal creation
+CREATE TEMPORARY TABLE temp_table 
+( 
+column_1 varchar(20),
+column_2 varchar(20),
+column_3 varchar(20)
+);
+
+SELECT * FROM temp_table;
+
+
+
+-- duplicating or creating one like an already existing table
+CREATE TEMPORARY TABLE dup_ED LIKE employee_demographics
+;
+
+SELECT * FROM dup_ED;
+
+-- creating one using a condition
+CREATE TEMPORARY TABLE salary_over_50k
+SELECT *
+FROM employee_salary
+WHERE salary >= 50000
+;
+
+SELECT * FROM salary_over_50k;
+
+-- dropping temp tables
+DROP TEMPORARY TABLE IF EXISTS salary_over_50k;
+DROP TEMPORARY TABLE IF EXISTS temp_table;
+DROP TEMPORARY TABLE IF EXISTS dup_ED;
+
+
+-- _______________________ STORED PROCEDURES _______________________
+
