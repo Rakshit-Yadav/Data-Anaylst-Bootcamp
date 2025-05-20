@@ -1,7 +1,6 @@
 #### CASE Statement
 - It allows to add logic to a query
 
-
 **Problem statement**: Council sent out a memo for pay increase, gotta follow it and determine people's new end of year salary and if they got a bonus, how much was it.
 Pay Increase and Bonus:
 - < 50000 = 5%
@@ -25,3 +24,6 @@ OUTPUT: ![](attachments/Pasted%20image%2020250515175142.png)
 - Another use case of **labelling** things
 
 ![](attachments/Pasted%20image%2020250515175105.png)
+
+
+- Test messsage: checking the access of new updated token and testing sync, this will be removed in further commits obviously.

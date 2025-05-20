@@ -692,3 +692,37 @@ DROP TEMPORARY TABLE IF EXISTS dup_ED;
 
 -- _______________________ STORED PROCEDURES _______________________
 
+-- creation
+CREATE PROCEDURE salary_above_50k()
+SELECT * 
+FROM employee_salary
+WHERE salary >= 50000
+;
+
+-- calling a stored procedure
+CALL salary_above_50k();
+-- making a stored procedure with actual good practices and correct way
+
+-- mentioning the database
+
+-- dropping the procedure if it already exists
+
+-- Change the DELIMITER in order to save mulitple queries inside a procedure
+DELIMITER $$ 
+
+USE Parks_and_Recreation$$
+
+CREATE PROCEDURE salary_above_10k_50k()
+BEGIN
+	SELECT *
+	FROM employee_salary
+	WHERE salary >= 50000;
+	SELECT *
+	FROM employee_salary
+	WHERE salary >= 10000;
+END$$
+
+DELIMITER ;
+
+
+CALL salary_above_10k_50k();
